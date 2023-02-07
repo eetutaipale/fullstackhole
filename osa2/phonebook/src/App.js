@@ -1,24 +1,16 @@
-
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useState } from 'react'
 
 const App = () => {
-  const [persons, setPersons] = useState([])
-  
-  useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
-  }, [])
-  
+  const [persons, setPersons] = useState([
+    { 
+      name: 'Arto Hellas',
+      number: '040-1231244'
+    }
+  ]) 
+
 
   const [newName, setNewName] = useState('')
   const [newNumber, setNumber] = useState('')
-
   const addName = (event) => {
     event.preventDefault()
     const person = {
@@ -77,7 +69,7 @@ const App = () => {
       <div>
 
       {persons.map(person => 
-          <Part key={person.id} name={person}/> 
+          <Part key={person.name} name={person}/> 
         )}
       </div>
       <style>
