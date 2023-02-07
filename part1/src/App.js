@@ -1,57 +1,76 @@
 
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+
+import servises from './components/servises'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
+    servises.getAll()
+    .then(response => {
+      setPersons(response.data)
+    })
   }, [])
   
 
   const [newName, setNewName] = useState('')
   const [newNumber, setNumber] = useState('')
 
+
+  
   const addName = (event) => {
     event.preventDefault()
+    let personvalue
     const person = {
       name: newName,
-      number: newNumber
+      number: newNumber,
     }
-    const isFound = persons.some(element => {
-      if (element.name === newName) {
+
+    const Found = persons.some(element => {
+      if (element.name === newName ){
+        personvalue = element.id
         return true;
       }
-  
-      return false;
-    });
-    if (isFound) {
-      alert(`${newName} is already added to phonebook`)
+      return false
+    })
+    
+    if (Found) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        console.log(personvalue)
+        servises.change(personvalue, person)
+        .then(
+          servises.getAll()
+          .then(response => {
+          setPersons(response.data)
+    })
+        )
+      }
     } else {
-      setPersons(persons.concat(person))
-    }
-      
-  
-  }
+      servises
+      .create(person)
+      .then(newnote => {
+        setPersons(persons.concat(newnote.data))
+        })}}
+
 
   const Part = (props) => {
-
     return (
-        
         <div>
         <p>
-        {props.name.name} {props.name.number}
+        {props.name.name} {props.name.number} <button onClick={() => 
+          {if (window.confirm('Delete  ' + props.name.name + ' ?')) {
+            servises.update(props.name.id)
+
+          }
+          }}> delete </button>
         </p>
         </div>
     )
     }
+
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -79,6 +98,7 @@ const App = () => {
       {persons.map(person => 
           <Part key={person.id} name={person}/> 
         )}
+        
       </div>
       <style>
       
