@@ -2,10 +2,15 @@
 import { useState, useEffect } from 'react'
 
 import servises from './components/servises'
-
+import './index.css'
 const App = () => {
   const [persons, setPersons] = useState([])
-  
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorMessage2, setErrorMessage2] = useState(null)
+  const [newName, setNewName] = useState('')
+  const [newNumber, setNumber] = useState('')
+  let value = null
+
   useEffect(() => {
     console.log('effect')
     servises.getAll()
@@ -15,8 +20,27 @@ const App = () => {
   }, [])
   
 
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNumber] = useState('')
+  const Notification = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+      return (
+        <div className='error'>
+          {message}
+        </div>
+    )
+  }
+  const Notification2 = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+
+      return (
+        <div className='error2'>
+          {message}
+        </div>
+    )
+  }
 
 
   
@@ -38,20 +62,36 @@ const App = () => {
     
     if (Found) {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-        console.log(personvalue)
+
         servises.change(personvalue, person)
-        .then(
-          servises.getAll()
-          .then(response => {
-          setPersons(response.data)
-    })
+        .catch(
+          value = true
         )
+        if(value) {
+          console.log("onnistu")
+          setErrorMessage2("Information of " + person.name + "has already been removed from server")
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+          value = false
+        } else {
+          setErrorMessage("Changed number for " + person.name)
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        }
+
       }
     } else {
       servises
       .create(person)
       .then(newnote => {
         setPersons(persons.concat(newnote.data))
+        setErrorMessage("Added " + person.name)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+
         })}}
 
 
@@ -62,6 +102,12 @@ const App = () => {
         {props.name.name} {props.name.number} <button onClick={() => 
           {if (window.confirm('Delete  ' + props.name.name + ' ?')) {
             servises.update(props.name.id)
+            .catch(error => {
+              setErrorMessage(`Information of ${props.name.name} has already been removed from server`)
+              setTimeout(() => {
+                setErrorMessage(null)
+              }, 5000)
+            })
 
           }
           }}> delete </button>
@@ -74,6 +120,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} />
+      <Notification2 message={errorMessage2} />
       <form onSubmit={addName}>
         <div>
           name: <input 
